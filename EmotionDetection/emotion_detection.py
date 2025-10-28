@@ -39,3 +39,16 @@ def emotion_detector(text_to_analyse):
 
     # Print the emotions in a list with the dominant_emotion
     return emotions
+
+#print the formatted string
+def format_emotion_response(emotions):
+    response_str = (
+        f"For the given statement, the system response is "
+        f"'anger': {emotions['anger']}, "
+        f"'disgust': {emotions['disgust']}, "
+        f"'fear': {emotions['fear']}, "
+        f"'joy': {emotions['joy']} and "
+        f"'sadness': {emotions['sadness']}. "
+        f"The dominant emotion is <b>{emotions['dominant_emotion']}</b>."
+    )
+    return {'response': response_str}
