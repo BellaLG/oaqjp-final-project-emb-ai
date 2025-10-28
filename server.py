@@ -1,32 +1,43 @@
-from flask import Flask, request, jsonify
+"""Flask web application for emotion detection using IBM Watson API."""
 
+from flask import Flask, render_template, request, jsonify
+from EmotionDetection.emotion_detection import emotion_detector, format_emotion_response
+
+# Create Flask application instance
 app = Flask(__name__)
 
-@app.route('/emotionDetector', methods=['GET'])
+
+@app.route("/emotionDetector")
 def emotion_detect():
-    # Retrieve the text to analyze from the request arguments
+    """
+    Handle GET requests for emotion detection.
+
+    Retrieves the text from query parameters, analyzes emotions
+    using the emotion_detector() function, and returns the result
+    in JSON format or an error message if no dominant emotion is found.
+    """
+    # Retrieve and clean the text to analyze
     text_to_analyze = request.args.get("textToAnalyze", "").strip()
 
-    # Exception handling for blank or missing input
-    if not text_to_analyze:
-        return jsonify({
-            'anger': None,
-            'disgust': None,
-            'fear': None,
-            'joy': None,
-            'sadness': None,
-            'dominant_emotion': None,
-            'error': 'Invalid text! Please try again!'
-        }), 400
-
-    # Pass the text to the emotion_detector function
+    # Call the emotion detection function
     response = emotion_detector(text_to_analyze)
 
-    # Format the response string
+    # Handle invalid or empty input
+    if response.get("dominant_emotion") is None:
+        return jsonify( "Invalid text! Please try again!"), 200
+    # Format and return the response
     formatted_response = format_emotion_response(response)
+    return  formatted_response, 200
 
-    # Return the formatted response as JSON with status 200
-    return jsonify(formatted_response), 200
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+@app.route("/")
+def home():
+    """
+    Render the home page with the input form.
+    """
+    return render_template("index.html")
+
+
+if __name__ == "__main__":
+    # Run Flask application on all network interfaces
+    app.run(host="0.0.0.0", port=5000)
