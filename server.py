@@ -1,33 +1,32 @@
-from flask import Flask, render_template, request, jsonify
-from EmotionDetection.emotion_detection import emotion_detector
-from EmotionDetection.emotion_detection import format_emotion_response
+from flask import Flask, request, jsonify
 
-app = Flask('Emotion Detector')
+app = Flask(__name__)
 
-@app.route("/emotionDetector")
+@app.route('/emotionDetector', methods=['GET'])
 def emotion_detect():
     # Retrieve the text to analyze from the request arguments
     text_to_analyze = request.args.get("textToAnalyze", "").strip()
 
-    # Pass the text to the sentiment_analyzer function and store the response
+    # Exception handling for blank or missing input
+    if not text_to_analyze:
+        return jsonify({
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None,
+            'error': 'Invalid text! Please try again!'
+        }), 400
+
+    # Pass the text to the emotion_detector function
     response = emotion_detector(text_to_analyze)
 
-    # If the response status code is 200, extract the label and score from the response
-    if response.status_code == 200:
-        #format the response
-        formatted_response = format_emotion_response(response)
-        
-    # If the response status code is 400, set response to None
-    elif response.status_code == 500:
-        formatted_response = None
+    # Format the response string
+    formatted_response = format_emotion_response(response)
 
-    #return formatted response
-    return formatted_response
-
-@app.route("/") 
-def home():
-    return render_template('index.html')
+    # Return the formatted response as JSON with status 200
+    return jsonify(formatted_response), 200
 
 if __name__ == '__main__':
-   app.run(host='0.0.0.0', port=5000)
-
+    app.run(host='0.0.0.0', port=5000)
